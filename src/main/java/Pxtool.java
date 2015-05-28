@@ -1,5 +1,8 @@
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.Set;
 
 import org.biopax.paxtools.impl.level3.BindingFeatureImpl;
@@ -30,8 +33,10 @@ public class Pxtool {
 	public static void main(String[] args) {
 		// Load a sample test BioPAX File via Simple IO Handler
 		FileInputStream fin;
+		
 		try {
 			fin = new FileInputStream("ras_1.owl");
+			BufferedWriter bw = new BufferedWriter(new FileWriter("out.txt"));
 			BioPAXIOHandler handler = new SimpleIOHandler();
 			Model model = handler.convertFromOWL(fin); // read a model
 
@@ -45,14 +50,19 @@ public class Pxtool {
 				String r = traverse(right);
 				String control = traverseCtrl(ctrl);
 				 	
-				if (control.length() != 0)
+				if (control.length() != 0) {
 					System.out.println(l + "\t->\t" + r + "\t\t\tController: " + control);
-				else // no controllers exist
+					bw.write(l + "\t->\t" + r + "\t\t\tController: " + control + "\n");
+				}
+				else {// no controllers exist
 					System.out.println(l + "\t->\t" + r);
+					bw.write(l + "\t->\t" + r + "\n");
+				}
+				
 				
 			}
 
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -67,7 +77,7 @@ public class Pxtool {
 				if (er != null) { 
 					Set<Xref> xref = er.getXref();
 					for (Xref tmpxRef : xref) {
-						if (tmpxRef instanceof UnificationXref);
+						if (tmpxRef instanceof UnificationXref)
 							extra += "[" + tmpxRef.getId() + "] ";
 					}
 				}
@@ -82,13 +92,13 @@ public class Pxtool {
 				if (tmpEf instanceof ModificationFeatureImpl && ((ModificationFeatureImpl) tmpEf).getModificationType() != null) {
 					// System.out.println("modification type: " + ((ModificationFeatureImpl) tmpEf).getModificationType().getTerm());
 					for (String tmpN : ((ModificationFeatureImpl) tmpEf).getModificationType().getTerm()) {
-						//extra += " {Modification type: " + tmpN + "}";
+						extra += " {Modification type: " + tmpN + "}";
 						break;
 					}
 				}
 			}
-			//ans += traversePE(tmp) + " " + extra + " + ";
-			ans += traversePE(tmp) + " + ";
+			ans += traversePE(tmp) + " " + extra + " + ";
+			//ans += traversePE(tmp) + " + ";
 		}
 		return ans.length() == 0 ? "" : ans.substring(0, ans.length() - 3); // has to remove the trailing " + "
 	}
@@ -109,11 +119,11 @@ public class Pxtool {
 			for (PhysicalEntity tmpPE : peSet) {
 				String tmpRes = traversePE(tmpPE);
 				if (tmpRes.length() !=0 )
-					str1 += traversePE(tmpPE) + ", ";
+					str1 += traversePE(tmpPE) + ",";
 			}
 		}
 		
-		str1 = str1.length() == 1 ? "" : str1.substring(0, str1.length() - 2);
+		str1 = str1.length() == 1 ? "" : str1.substring(0, str1.length() - 1);
 		if (str1.length() != 0) // complete the parenthesis
 			str1 += ")";
         // str1 = "COMPLEX:" + str1; TODO
@@ -124,11 +134,11 @@ public class Pxtool {
 			for (PhysicalEntity tmpPE : peSet) {
 				String tmpRes = traversePE(tmpPE);
 				if (tmpRes.length() != 0)
-					str2 += traversePE(tmpPE) + ", ";
+					str2 += traversePE(tmpPE) + ",";
 			}
 		}
 		
-		str2 = str2.length() == 1 ? "" : str2.substring(0, str2.length() - 2);
+		str2 = str2.length() == 1 ? "" : str2.substring(0, str2.length() - 1);
 		if (str2.length() != 0)
 			str2 += "]";
 		// str2 = "PE GENERIC:" + str2; TODO
@@ -141,8 +151,8 @@ public class Pxtool {
 				name = tmp; // we only take the first name
 				break;
 			}
-			str3 += name + ", ";
-			str3 = str3.length() == 0 ? "" : str3.substring(0, str3.length() - 2);
+			str3 += name + ",";
+			str3 = str3.length() == 0 ? "" : str3.substring(0, str3.length() - 1);
 			
 			
 		}
